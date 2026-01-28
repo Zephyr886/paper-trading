@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root{
+            /* palette (from reference) */
+            --paper: #f3dea1;         /* RGB 243 222 161 */
+            --paper-2: #d8c990;       /* RGB 216 201 144 */
+            --ink: #131313;           /* RGB 19 19 19 */
+            --accent: #9d462f;        /* RGB 157 70 47 */
+            --accent-2: #5b749f;      /* RGB 91 116 159 */
+            --good: #2f7d57;
+            --bad: #9d462f;
+
+            --radius: 12px;
+            --radius-sm: 10px;
+            --border: rgba(19,19,19,0.18);
+            --shadow: 0 14px 30px rgba(19,19,19,0.28);
+        }
+
+        *{ box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body{
+            width: 340px;
+            padding: 14px 14px 16px;
+            color: rgba(19,19,19,0.92);
+            font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(1200px 400px at 60% -10%, rgba(157,70,47,0.12), transparent 60%),
+                radial-gradient(700px 300px at 0% 30%, rgba(91,116,159,0.10), transparent 55%),
+                repeating-linear-gradient(135deg, rgba(19,19,19,0.02) 0 2px, rgba(255,255,255,0.00) 2px 6px),
+                linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+        }
+
+        /* Header */
+        .app-header{
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 0 0 12px 0;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.35);
+            box-shadow: 0 10px 22px rgba(19,19,19,0.12);
+        }
+        .header-right{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-btn{
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(19,19,19,0.18);
+            background: rgba(255,255,255,0.55);
+            color: rgba(19,19,19,0.78);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            box-shadow: 0 8px 16px rgba(19,19,19,0.10);
+            transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+        }
+        .icon-btn:hover{
+            filter: brightness(1.02);
+            box-shadow: 0 10px 18px rgba(19,19,19,0.14);
+        }
+        .icon-btn:active{ transform: translateY(1px); }
+        h2{
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: 0.4px;
+            color: var(--accent);
+            font-family: ui-serif, "Songti SC", "STSong", "SimSun", serif;
+            font-weight: 800;
+        }
+        .app-subtitle{
+            margin: 0;
+            font-size: 11px;
+            color: rgba(19,19,19,0.62);
+            white-space: nowrap;
+        }
+
+        /* Cards */
+        .section{
+            margin: 0 0 12px 0;
+            padding: 12px;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.44);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(6px);
+        }
+
+        .row { margin-bottom: 10px; }
+        .row:last-child { margin-bottom: 0; }
+
+        label{
+            font-size: 11px;
+            color: rgba(19,19,19,0.72);
+            display: block;
+            margin-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+
+        input[type="number"], input[type="range"]{
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(19,19,19,0.20);
+            background: rgba(255,255,255,0.55);
+            color: var(--ink);
+            outline: none;
+        }
+        input[type="number"]:focus, input[type="range"]:focus{
+            border-color: rgba(157,70,47,0.55);
+            box-shadow: 0 0 0 3px rgba(157,70,47,0.16);
+        }
+
+        .balance-row { display: flex; gap: 10px; }
+        .balance-item { flex: 1; }
+
+        .range-val{
+            text-align: right;
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 6px;
+            margin-bottom: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Buttons */
+        button{
+            width: 100%;
+            padding: 10px 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            border-radius: 999px;
+            border: 1px solid rgba(19,19,19,0.18);
+            background: linear-gradient(180deg, rgba(157,70,47,0.95), rgba(124,45,28,0.98));
+            color: rgba(255,255,255,0.96);
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            box-shadow: 0 10px 18px rgba(19,19,19,0.22);
+            transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+        }
+        button:hover{
+            filter: brightness(1.03);
+            box-shadow: 0 12px 22px rgba(19,19,19,0.26);
+        }
+        button:active{ transform: translateY(1px) scale(0.99); }
+
+        button.secondary{
+            margin-top: 10px;
+            background: rgba(255,255,255,0.55);
+            color: rgba(19,19,19,0.86);
+            border: 1px solid rgba(19,19,19,0.22);
+            box-shadow: 0 10px 18px rgba(19,19,19,0.12);
+        }
+        button.secondary:hover{ filter: brightness(1.02); }
+
+        /* Modal */
+        .modal-overlay{
+            position: fixed;
+            inset: 0;
+            background: rgba(19,19,19,0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+        .modal-overlay.open{ display: flex; }
+        .modal{
+            width: 100%;
+            max-width: 340px;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.28);
+            background:
+                radial-gradient(700px 250px at 70% -10%, rgba(157,70,47,0.12), transparent 60%),
+                repeating-linear-gradient(135deg, rgba(19,19,19,0.02) 0 2px, rgba(255,255,255,0.00) 2px 6px),
+                linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.44));
+            box-shadow: 0 22px 50px rgba(19,19,19,0.35);
+            padding: 12px;
+        }
+        .modal-header{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 4px 4px 10px;
+            border-bottom: 1px solid rgba(19,19,19,0.12);
+            margin-bottom: 10px;
+        }
+        .modal-title{
+            margin: 0;
+            font-size: 14px;
+            color: rgba(19,19,19,0.90);
+            font-weight: 900;
+            letter-spacing: 0.2px;
+        }
+        .modal-close{
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid rgba(19,19,19,0.18);
+            background: rgba(255,255,255,0.60);
+            color: rgba(19,19,19,0.70);
+            cursor: pointer;
+        }
+        .modal-close:hover{ filter: brightness(1.02); }
+
+        /* Tabs (segmented) */
+        .tab-bar{
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            padding: 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(19,19,19,0.16);
+            background: rgba(255,255,255,0.38);
+        }
+        .tab-btn{
+            flex: 1;
+            padding: 9px 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: rgba(19,19,19,0.62);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            margin: 0;
+        }
+        .tab-btn:hover{ color: rgba(19,19,19,0.84); }
+        .tab-btn.active{
+            color: rgba(255,255,255,0.96);
+            background: linear-gradient(180deg, rgba(91,116,159,0.95), rgba(54,75,110,0.98));
+            box-shadow: 0 8px 16px rgba(19,19,19,0.18);
+        }
+
+        .tab-content{
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(19,19,19,0.14);
+            background: rgba(255,255,255,0.28);
+            overflow: hidden;
+            min-height: 200px;
+        }
+        .tab-panel{
+            display: none;
+            padding: 10px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-size: 11px;
+        }
+        .tab-panel.active{ display: block; }
+        .tab-panel::-webkit-scrollbar{ width: 10px; }
+        .tab-panel::-webkit-scrollbar-thumb{
+            background: rgba(19,19,19,0.18);
+            border-radius: 999px;
+            border: 3px solid rgba(255,255,255,0.35);
+        }
+
+        .empty{
+            text-align: center;
+            color: rgba(19,19,19,0.52);
+            padding: 18px 10px;
+        }
+
+        /* Token cards */
+        .token-card{
+            background: rgba(255,255,255,0.40);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(19,19,19,0.14);
+        }
+        .token-card-header{
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent-2);
+        }
+        .token-card-header:hover{ background: rgba(255,255,255,0.36); }
+        .token-link{
+            color: rgba(19,19,19,0.90);
+            font-weight: 900;
+            text-decoration: none;
+        }
+        .token-link:hover{ text-decoration: underline; text-decoration-color: rgba(157,70,47,0.55); }
+        .token-card-meta{
+            color: rgba(19,19,19,0.60);
+            font-size: 10px;
+            margin-top: 4px;
+        }
+        .token-card-expand{
+            padding: 10px 12px 12px;
+            border-top: 1px solid rgba(19,19,19,0.12);
+            background: rgba(255,255,255,0.24);
+        }
+
+        .trade-list{ max-height: 280px; overflow-y: auto; font-size: 11px; }
+        .trade-item{
+            background: rgba(255,255,255,0.44);
+            border-left: 4px solid var(--accent-2);
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(19,19,19,0.12);
+        }
+        .trade-item.sell{ border-left-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h2>纸上谈币</h2>
+        <div class="header-right">
+            <p class="app-subtitle">GMGN 模拟交易 · 本地记录</p>
+            <button type="button" class="icon-btn" id="openUiSettings" title="按钮样式设置">⚙︎</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="row balance-row">
+            <div class="balance-item">
+                <label>SOL 余额</label>
+                <input type="number" id="balSol" step="0.1" value="10">
+            </div>
+            <div class="balance-item">
+                <label>BNB 余额</label>
+                <input type="number" id="balBnb" step="0.1" value="5">
+            </div>
+        </div>
+
+        <button id="saveBtn">保存全局设置</button>
+    </div>
+
+    <div class="section">
+        <div class="tab-bar">
+            <button type="button" class="tab-btn active" data-tab="pnl">最近盈亏</button>
+            <button type="button" class="tab-btn" data-tab="holdings">持有代币</button>
+            <button type="button" class="tab-btn" data-tab="activity">活动</button>
+        </div>
+        <div class="tab-content">
+            <div id="tab-pnl" class="tab-panel active"></div>
+            <div id="tab-holdings" class="tab-panel"></div>
+            <div id="tab-activity" class="tab-panel"></div>
+        </div>
+        <button id="clearBtn" class="secondary" style="margin-top:10px;">清空记录 & 重置仓位</button>
+    </div>
+
+    <script src="popup.js"></script>
+
+    <!-- UI Settings Modal -->
+    <div class="modal-overlay" id="uiSettingsOverlay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-label="按钮样式设置">
+            <div class="modal-header">
+                <p class="modal-title">按钮样式设置</p>
+                <button type="button" class="modal-close" id="closeUiSettings" aria-label="关闭">✕</button>
+            </div>
+
+            <div class="row">
+                <label>战壕买入按钮大小 (0.5x - 2.0x)</label>
+                <input type="range" id="btnScale" min="0.5" max="2.0" step="0.1" value="1.0">
+                <div class="range-val" id="btnScaleVal">1.0x</div>
+            </div>
+
+            <div class="row">
+                <label>战壕买入按钮透明度 (0.1 - 1.0)</label>
+                <input type="range" id="btnOpacity" min="0.1" max="1.0" step="0.1" value="1.0">
+                <div class="range-val" id="btnOpacityVal">100%</div>
+            </div>
+
+            <button id="saveUiBtn" type="button">保存按钮设置</button>
+        </div>
+    </div>
+</body>
+</html>

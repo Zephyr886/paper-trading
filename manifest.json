@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "纸上谈币 (Paper Trading) - GMGN模拟交易",
+  "version": "1.1",
+  "description": "第三方GMGN模拟交易工具。在gmgn.ai上进行演练，本地追踪盈亏，不涉及真实资产。",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://gmgn.ai/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "打开纸上谈币设置",
+    "default_icon": {
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://gmgn.ai/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "style.css"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
