@@ -28,6 +28,10 @@
             background: url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             position: relative;
+            /* 防止快速点击时选中文本，影响体验 */
+            user-select: none; 
+            -webkit-user-select: none;
+            cursor: pointer; /* 变成手型，暗示可点击 */
         }
 
         .site-header {
@@ -65,6 +69,9 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            /* 恢复内容区域的文本选择 */
+            user-select: text; 
+            cursor: auto; 
         }
 
         .video-card {
@@ -107,29 +114,30 @@
             width: 100%; height: 100%; display: block;
         }
 
-        /* 按钮容器，调整为换行居中，适应手机 */
         .links {
             display: flex; 
             flex-wrap: wrap;
-            gap: 16px; 
+            gap: 12px;
             margin-top: 5px;
             justify-content: center;
         }
 
         .link-btn {
-            padding: 10px 24px;
+            padding: 10px 20px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: bold;
             color: #fff;
-            background: #9d462f; /* 默认红色 */
+            background: #9d462f;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             transition: all 0.2s;
             border: 2px solid #fff;
-            font-size: 15px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
+            cursor: pointer;
         }
 
         .link-btn:hover {
@@ -138,13 +146,9 @@
             filter: brightness(1.1);
         }
 
-        .link-btn.gh { background: #4a5d7e; } /* GitHub 蓝 */
-        
-        /* 新增：下载按钮的绿色样式 (Pepe Green) */
-        .link-btn.dl { 
-            background: #4a7c36; 
-            font-size: 16px; /* 稍微大一点点强调 */
-        } 
+        .link-btn.dl { background: #4a7c36; } 
+        .link-btn.gh { background: #4a5d7e; }
+        .link-btn.gmgn { background: #d68910; font-size: 15px; }
 
         .music-control {
             position: fixed;
@@ -169,13 +173,30 @@
         .music-control:hover { transform: scale(1.1); background: #fff; }
         .rotating { animation: spin 4s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- 新增：浮动文字特效样式 --- */
+        .click-fx {
+            position: fixed;
+            pointer-events: none; /* 让鼠标可以穿透，不影响点击 */
+            color: #d68910; /* 金色字体 */
+            font-weight: 900;
+            font-size: 20px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            z-index: 9999;
+            animation: floatUp 1s ease-out forwards;
+            font-family: ui-serif, "Songti SC", "STSong", "SimSun", serif;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
         
         @media (max-width: 600px) {
             .site-header .brand { display: none; }
             .video-card { padding: 16px 10px; border-width: 2px; }
             .main-title { margin-bottom: 5px; }
-            /* 手机上让下载按钮占满一行，更方便点击 */
-            .link-btn { flex: 1 1 auto; justify-content: center; }
+            .link-btn { flex: 1 1 auto; justify-content: center; min-width: 45%; }
         }
     </style>
 </head>
@@ -202,17 +223,10 @@
         </div>
 
         <nav class="links">
-            <a class="link-btn" href="https://x.com/paper_trad1ng" target="_blank">
-                Twitter / X
-            </a>
-            
-            <a class="link-btn dl" href="https://github.com/Zephyr886/paper-trading/archive/refs/tags/v1.2.zip" download>
-                📥 下载插件 v1.2
-            </a>
-
-            <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank">
-                GitHub 源码
-            </a>
+            <a class="link-btn" href="https://x.com/paper_trad1ng" target="_blank">Twitter / X</a>
+            <a class="link-btn gmgn" href="https://gmgn.ai/r/nivpGnlj?chain=bsc" target="_blank">⚡️ 注册 GMGN</a>
+            <a class="link-btn dl" href="https://github.com/Zephyr886/paper-trading/archive/refs/tags/v1.2.zip" download>📥 下载插件 v1.2</a>
+            <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank">GitHub 源码</a>
         </nav>
     </main>
 
@@ -220,9 +234,7 @@
         <source src="bgm.mp3" type="audio/mpeg">
     </audio>
 
-    <button class="music-control" id="musicBtn" title="播放/暂停音乐">
-        ✕
-    </button>
+    <button class="music-control" id="musicBtn" title="播放/暂停音乐">✕</button>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -232,33 +244,20 @@
             
             audio.volume = 0.4;
 
+            // --- 1. 音乐控制逻辑 ---
             function playMusic() {
                 if (!isPlaying) {
                     audio.play().then(() => {
                         isPlaying = true;
                         btn.classList.add('rotating');
                         btn.innerHTML = '♪';
-                    }).catch(error => {
-                        console.log("播放失败");
-                    });
+                    }).catch(error => { console.log("等待用户交互"); });
                 }
             }
-
             playMusic();
 
-            function unlockAudio() {
-                playMusic();
-                document.removeEventListener('click', unlockAudio);
-                document.removeEventListener('touchstart', unlockAudio);
-                document.removeEventListener('keydown', unlockAudio);
-            }
-
-            document.addEventListener('click', unlockAudio);
-            document.addEventListener('touchstart', unlockAudio);
-            document.addEventListener('keydown', unlockAudio);
-
             btn.addEventListener('click', function(e) {
-                e.stopPropagation(); 
+                e.stopPropagation(); // 避免触发点击特效
                 if (isPlaying) {
                     audio.pause();
                     btn.classList.remove('rotating');
@@ -269,6 +268,63 @@
                     btn.innerHTML = '♪';
                 }
                 isPlaying = !isPlaying;
+            });
+
+            // --- 2. 互动点击特效逻辑 ---
+            
+            // 定义随机词库
+            const words = [
+                "功德 +1", "财富 +1", "HODL", "To The Moon", 
+                "解套", "暴富", "💎🙌", "🚀", "梭哈", "GM", "GN",
+                "纸上谈币", "悟道", "起飞", "稳住"
+            ];
+
+            function createFloatingText(x, y) {
+                // 创建元素
+                const el = document.createElement('span');
+                el.classList.add('click-fx');
+                
+                // 随机选择一个词
+                const word = words[Math.floor(Math.random() * words.length)];
+                el.innerText = word;
+                
+                // 设置位置
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                
+                // 随机一点点颜色变化（金色到红色）
+                const colors = ['#d68910', '#9d462f', '#f3dea1'];
+                el.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+                document.body.appendChild(el);
+
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    el.remove();
+                }, 1000);
+            }
+
+            // 全局点击监听
+            document.addEventListener('click', function(e) {
+                // 1. 尝试播放音乐 (如果还没播)
+                playMusic();
+                
+                // 2. 触发点击特效 (排除点击链接或按钮的情况，避免太乱)
+                if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IFRAME') {
+                    createFloatingText(e.clientX, e.clientY);
+                }
+            });
+            
+            // 手机触摸监听
+            document.addEventListener('touchstart', function(e) {
+                playMusic();
+                // 触摸特效
+                if (e.touches.length > 0) {
+                    const touch = e.touches[0];
+                    if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+                        createFloatingText(touch.clientX, touch.clientY);
+                    }
+                }
             });
         });
     </script>
