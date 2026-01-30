@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>纸上谈币 · 构建新人友好型meme教学社群</title>
+    <link rel="canonical" href="https://纸上谈币.com/">
+    <meta name="description" content="纸上谈币 - 构建新人友好型meme教学社群。GMGN 模拟交易插件，本地演练、零风险。">
+    <style>
+        :root {
+            --paper: #f3dea1;
+            --paper-2: #d8c990;
+            --ink: #131313;
+            --accent: #9d462f;
+            --accent-2: #5b749f;
+            --radius: 12px;
+            --border: rgba(19,19,19,0.18);
+            --shadow: 0 14px 30px rgba(19,19,19,0.28);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        html { height: 100%; }
+        body {
+            min-height: 100vh;
+            height: 100%;
+            padding: 0;
+            padding-top: clamp(52px, 10vw, 72px);
+            padding-left: clamp(12px, 3vw, 24px);
+            padding-right: clamp(12px, 3vw, 24px);
+            padding-bottom: clamp(12px, 3vw, 24px);
+            color: rgba(19,19,19,0.92);
+            font-family: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(1200px 400px at 60% -10%, rgba(157,70,47,0.12), transparent 60%),
+                radial-gradient(700px 300px at 0% 30%, rgba(91,116,159,0.10), transparent 55%),
+                repeating-linear-gradient(135deg, rgba(19,19,19,0.02) 0 2px, rgba(255,255,255,0.00) 2px 6px),
+                linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: clamp(48px, 9vw, 64px);
+            padding: 0 clamp(16px, 4vw, 24px);
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 2vw, 12px);
+            z-index: 10;
+            background: rgba(243, 222, 161, 0.85);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(19,19,19,0.08);
+            backdrop-filter: blur(6px);
+        }
+
+        .site-header .logo {
+            width: clamp(36px, 7vw, 48px);
+            height: clamp(36px, 7vw, 48px);
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .site-header .brand {
+            margin: 0;
+            font-size: clamp(18px, 3.5vw, 24px);
+            letter-spacing: 0.4px;
+            color: var(--accent);
+            font-family: ui-serif, "Songti SC", "STSong", "SimSun", serif;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .page {
+            flex: 1 1 auto;
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(12px, 2.5vw, 24px);
+            min-height: 0;
+        }
+
+        .title {
+            margin: 0;
+            font-size: clamp(18px, 3.2vw, 26px);
+            letter-spacing: 0.4px;
+            color: var(--accent);
+            font-family: ui-serif, "Songti SC", "STSong", "SimSun", serif;
+            font-weight: 800;
+            text-align: center;
+            line-height: 1.3;
+            flex-shrink: 0;
+        }
+
+        .video-wrap {
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: min(30vh, 180px);
+            max-height: min(70vh, 56vw);
+            aspect-ratio: 16 / 9;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(6px);
+        }
+
+        .video-wrap video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(10px, 2vw, 16px);
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: clamp(8px, 1.8vw, 12px) clamp(16px, 3vw, 24px);
+            border-radius: 999px;
+            border: 1px solid rgba(19,19,19,0.18);
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.96);
+            background: linear-gradient(180deg, rgba(157,70,47,0.95), rgba(124,45,28,0.98));
+            box-shadow: 0 10px 18px rgba(19,19,19,0.22);
+            transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+            font-family: inherit;
+            font-size: clamp(12px, 2vw, 15px);
+        }
+
+        .link-btn:hover {
+            filter: brightness(1.03);
+            box-shadow: 0 12px 22px rgba(19,19,19,0.26);
+        }
+
+        .link-btn:active {
+            transform: translateY(1px) scale(0.99);
+        }
+
+        .link-btn.gh {
+            background: linear-gradient(180deg, rgba(91,116,159,0.95), rgba(54,75,110,0.98));
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header" aria-label="站点标识">
+        <img class="logo" src="logo.png" alt="" width="48" height="48">
+        <span class="brand">纸上谈币</span>
+    </header>
+    <main class="page">
+        <h1 class="title">构建新人友好型meme教学社群</h1>
+
+        <section class="video-wrap" aria-label="演示视频">
+            <!-- 将演示视频路径填入 src，或替换为 iframe 嵌入链接 -->
+            <video controls src="" preload="metadata" poster="">
+                您的浏览器不支持视频播放。
+            </video>
+        </section>
+
+        <nav class="links" aria-label="社群链接">
+            <a class="link-btn" href="https://x.com/paper_trad1ng" target="_blank" rel="noopener noreferrer" title="关注我们 on X (Twitter)" aria-label="X (Twitter)">X (Twitter)</a>
+            <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank" rel="noopener noreferrer" title="GitHub 仓库" aria-label="GitHub">GitHub</a>
+        </nav>
+    </main>
+</body>
+</html>
