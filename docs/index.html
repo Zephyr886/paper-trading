@@ -8,7 +8,6 @@
     <meta name="description" content="纸上谈币 - 构建新人友好型meme教学社群。">
     <style>
         :root {
-            /* 提取自图片的配色 */
             --ink: #2c1e18;
             --accent: #9d462f;
             --bg-card: rgba(253, 245, 230, 0.95);
@@ -26,14 +25,11 @@
             justify-content: center;
             font-family: ui-serif, "Songti SC", "STSong", "SimSun", serif;
             color: var(--ink);
-            
-            /* 背景图设置 */
             background: url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
 
-        /* 顶部栏 */
         .site-header {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -71,7 +67,6 @@
             gap: 20px;
         }
 
-        /* 视频卡片区域 */
         .video-card {
             width: 100%;
             max-width: 800px;
@@ -106,6 +101,8 @@
             border-radius: 4px;
             overflow: hidden;
             border: 1px solid rgba(0,0,0,0.1);
+            /* 为了让点击视频也能触发音频，我们需要让iframe不妨碍点击事件的冒泡，但这会影响视频控制 */
+            /* 所以最稳妥的方式是让用户只要碰一下屏幕任何地方就开始播放 */
         }
 
         .video-wrap iframe {
@@ -137,7 +134,6 @@
 
         .link-btn.gh { background: #4a5d7e; }
 
-        /* --- 音乐控制按钮样式 --- */
         .music-control {
             position: fixed;
             bottom: 20px;
@@ -158,20 +154,9 @@
             font-size: 24px;
         }
         
-        .music-control:hover {
-            transform: scale(1.1);
-            background: #fff;
-        }
-
-        /* 旋转动画，当音乐播放时应用 */
-        .rotating {
-            animation: spin 4s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        .music-control:hover { transform: scale(1.1); background: #fff; }
+        .rotating { animation: spin 4s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
         @media (max-width: 600px) {
             .site-header .brand { display: none; }
@@ -213,7 +198,7 @@
     </audio>
 
     <button class="music-control" id="musicBtn" title="播放/暂停音乐">
-        ♪
+        ✕
     </button>
 
     <script>
@@ -221,34 +206,48 @@
             var audio = document.getElementById('bgm');
             var btn = document.getElementById('musicBtn');
             var isPlaying = false;
-
-            // 设置音量，避免太吵
+            
             audio.volume = 0.4;
 
-            // 尝试自动播放
-            var playPromise = audio.play();
-
-            if (playPromise !== undefined) {
-                playPromise.then(function() {
-                    // 自动播放成功
-                    isPlaying = true;
-                    btn.classList.add('rotating'); // 让按钮开始旋转
-                }).catch(function(error) {
-                    // 自动播放被阻止 (正常现象)
-                    console.log("自动播放被阻止，等待用户交互");
-                    isPlaying = false;
-                    btn.classList.remove('rotating');
-                });
+            // 1. 定义播放函数
+            function playMusic() {
+                if (!isPlaying) {
+                    audio.play().then(() => {
+                        isPlaying = true;
+                        btn.classList.add('rotating');
+                        btn.innerHTML = '♪';
+                    }).catch(error => {
+                        console.log("播放失败（可能因为用户还没交互）");
+                    });
+                }
             }
 
-            // 点击按钮切换播放/暂停
-            btn.addEventListener('click', function() {
+            // 2. 尝试页面一加载就播放 (部分浏览器可能允许)
+            playMusic();
+
+            // 3. 关键大招：监听全屏幕的点击/触摸事件
+            // 只要用户点了屏幕任何地方（哪怕是空白处），就触发播放
+            function unlockAudio() {
+                playMusic();
+                // 一旦触发成功，就移除监听，避免重复触发
+                document.removeEventListener('click', unlockAudio);
+                document.removeEventListener('touchstart', unlockAudio);
+                document.removeEventListener('keydown', unlockAudio);
+            }
+
+            document.addEventListener('click', unlockAudio);
+            document.addEventListener('touchstart', unlockAudio);
+            document.addEventListener('keydown', unlockAudio);
+
+            // 4. 按钮手动控制
+            btn.addEventListener('click', function(e) {
+                // 阻止事件冒泡，防止触发上面的 unlockAudio
+                e.stopPropagation(); 
+
                 if (isPlaying) {
                     audio.pause();
                     btn.classList.remove('rotating');
-                    btn.innerHTML = '✕'; // 暂停时显示叉号或静音图标
-                    // 稍微延迟一下变回音符，或者直接变
-                    setTimeout(() => btn.innerHTML = '♪', 1000); 
+                    btn.innerHTML = '✕';
                 } else {
                     audio.play();
                     btn.classList.add('rotating');
