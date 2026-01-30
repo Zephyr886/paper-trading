@@ -303,32 +303,49 @@ function makeInteractable(panel) {
     const dragBar = panel.querySelector('#drag-bar');
     const resizeBtn = panel.querySelector('#resize-btn');
 
-    // 1. 拖拽
+    // 1. 拖拽 - 修复：确保鼠标移出面板后仍可继续拖动
     dragBar.addEventListener('mousedown', (e) => {
         e.preventDefault(); // 防止选中文本
+        e.stopPropagation();
         const startX = e.clientX;
         const startY = e.clientY;
         const startLeft = panel.offsetLeft;
         const startTop = panel.offsetTop;
 
+        // 添加全局样式
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+
         function onMouseMove(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
             panel.style.left = `${startLeft + dx}px`;
             panel.style.top = `${startTop + dy}px`;
         }
 
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
+        function onMouseUp(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // 恢复样式
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            // 移除事件监听器
+            document.removeEventListener('mousemove', onMouseMove, true);
+            document.removeEventListener('mouseup', onMouseUp, true);
+            window.removeEventListener('mousemove', onMouseMove, true);
+            window.removeEventListener('mouseup', onMouseUp, true);
         }
 
-        // 关键：绑定到 document 上，而不是元素上
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        // 关键：使用 capture 模式绑定到 document 和 window，确保即使鼠标移出也能捕获事件
+        document.addEventListener('mousemove', onMouseMove, { capture: true, passive: false });
+        document.addEventListener('mouseup', onMouseUp, { capture: true, passive: false });
+        window.addEventListener('mousemove', onMouseMove, { capture: true, passive: false });
+        window.addEventListener('mouseup', onMouseUp, { capture: true, passive: false });
     });
 
-    // 2. 缩放
+    // 2. 缩放 - 修复：确保鼠标移出面板后仍可继续调节
     resizeBtn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -337,20 +354,39 @@ function makeInteractable(panel) {
         const startWidth = panel.offsetWidth;
         const startHeight = panel.offsetHeight;
 
+        // 添加全局样式，防止鼠标移出时丢失焦点
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'se-resize';
+        // 确保面板可以接收事件
+        panel.style.pointerEvents = 'auto';
+
         function onMouseMove(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const newW = Math.max(260, startWidth + (e.clientX - startX));
             const newH = Math.max(240, startHeight + (e.clientY - startY));
             panel.style.width = `${newW}px`;
             panel.style.height = `${newH}px`;
         }
 
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
+        function onMouseUp(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // 恢复样式
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            // 移除事件监听器
+            document.removeEventListener('mousemove', onMouseMove, true);
+            document.removeEventListener('mouseup', onMouseUp, true);
+            window.removeEventListener('mousemove', onMouseMove, true);
+            window.removeEventListener('mouseup', onMouseUp, true);
         }
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        // 关键：使用 capture 模式绑定到 document 和 window，确保即使鼠标移出面板也能继续响应
+        document.addEventListener('mousemove', onMouseMove, { capture: true, passive: false });
+        document.addEventListener('mouseup', onMouseUp, { capture: true, passive: false });
+        window.addEventListener('mousemove', onMouseMove, { capture: true, passive: false });
+        window.addEventListener('mouseup', onMouseUp, { capture: true, passive: false });
     });
 }
 

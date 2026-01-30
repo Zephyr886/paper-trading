@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const balSolInput = document.getElementById('balSol');
     const balBnbInput = document.getElementById('balBnb');
+    const quickBuyAmountInput = document.getElementById('quickBuyAmount');
     const btnScaleInput = document.getElementById('btnScale');
     const btnScaleVal = document.getElementById('btnScaleVal');
     const btnOpacityInput = document.getElementById('btnOpacity');
@@ -282,16 +283,19 @@ document.addEventListener('DOMContentLoaded', () => {
         balSolInput.value = balances.sol;
         balBnbInput.value = balances.bnb;
 
+        const quickBuyAmount = (result.simSettings && result.simSettings.amount) ? result.simSettings.amount : 0.1;
+        quickBuyAmountInput.value = quickBuyAmount;
+
         refreshAllTabs();
     });
 
-    function persistUiSettings({ scale, opacity }, onDone) {
+    function persistUiSettings({ scale, opacity, amount }, onDone) {
         chrome.storage.local.get(['simSettings'], (res) => {
             const newSettings = {
                 ...(res.simSettings || {}),
                 btnScale: scale,
                 btnOpacity: opacity,
-                amount: 0.1
+                amount: amount !== undefined ? amount : (res.simSettings && res.simSettings.amount) ? res.simSettings.amount : 0.1
             };
             chrome.storage.local.set({ simSettings: newSettings }, () => onDone && onDone());
         });
@@ -303,9 +307,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const bnb = parseFloat(balBnbInput.value);
         const scale = parseFloat(btnScaleInput.value);
         const opacity = parseFloat(btnOpacityInput.value);
+        const quickBuyAmount = parseFloat(quickBuyAmountInput.value);
         if (isNaN(sol) || isNaN(bnb)) { alert('请输入有效金额'); return; }
+        if (isNaN(quickBuyAmount) || quickBuyAmount <= 0) { alert('请输入有效的买入数额'); return; }
 
-        persistUiSettings({ scale, opacity }, () => {
+        persistUiSettings({ scale, opacity, amount: quickBuyAmount }, () => {
             chrome.storage.local.set({ walletBalance: { sol, bnb } }, () => {
                 const orig = saveBtn.innerText;
                 saveBtn.innerText = '已保存! (请刷新页面生效)';
@@ -322,15 +328,19 @@ document.addEventListener('DOMContentLoaded', () => {
     saveUiBtn.addEventListener('click', () => {
         const scale = parseFloat(btnScaleInput.value);
         const opacity = parseFloat(btnOpacityInput.value);
-        persistUiSettings({ scale, opacity }, () => {
-            const orig = saveUiBtn.innerText;
-            saveUiBtn.innerText = '已保存 (刷新页面生效)';
-            saveUiBtn.style.background = '#2f7d57';
-            setTimeout(() => {
-                saveUiBtn.innerText = orig;
-                saveUiBtn.style.background = 'var(--accent)';
-            }, 1200);
-            closeUiSettings();
+        // 从全局设置中获取当前的买入数额，保持一致性
+        chrome.storage.local.get(['simSettings'], (res) => {
+            const currentAmount = (res.simSettings && res.simSettings.amount) ? res.simSettings.amount : 0.1;
+            persistUiSettings({ scale, opacity, amount: currentAmount }, () => {
+                const orig = saveUiBtn.innerText;
+                saveUiBtn.innerText = '已保存 (刷新页面生效)';
+                saveUiBtn.style.background = '#2f7d57';
+                setTimeout(() => {
+                    saveUiBtn.innerText = orig;
+                    saveUiBtn.style.background = 'var(--accent)';
+                }, 1200);
+                closeUiSettings();
+            });
         });
     });
 
