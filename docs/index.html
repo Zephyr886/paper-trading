@@ -101,16 +101,19 @@
             border-radius: 4px;
             overflow: hidden;
             border: 1px solid rgba(0,0,0,0.1);
-            /* 为了让点击视频也能触发音频，我们需要让iframe不妨碍点击事件的冒泡，但这会影响视频控制 */
-            /* 所以最稳妥的方式是让用户只要碰一下屏幕任何地方就开始播放 */
         }
 
         .video-wrap iframe {
             width: 100%; height: 100%; display: block;
         }
 
+        /* 按钮容器，调整为换行居中，适应手机 */
         .links {
-            display: flex; gap: 16px; margin-top: 5px;
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 16px; 
+            margin-top: 5px;
+            justify-content: center;
         }
 
         .link-btn {
@@ -119,20 +122,29 @@
             text-decoration: none;
             font-weight: bold;
             color: #fff;
-            background: #9d462f;
+            background: #9d462f; /* 默认红色 */
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             transition: all 0.2s;
             border: 2px solid #fff;
             font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .link-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-            background: #b8553b;
+            filter: brightness(1.1);
         }
 
-        .link-btn.gh { background: #4a5d7e; }
+        .link-btn.gh { background: #4a5d7e; } /* GitHub 蓝 */
+        
+        /* 新增：下载按钮的绿色样式 (Pepe Green) */
+        .link-btn.dl { 
+            background: #4a7c36; 
+            font-size: 16px; /* 稍微大一点点强调 */
+        } 
 
         .music-control {
             position: fixed;
@@ -162,6 +174,8 @@
             .site-header .brand { display: none; }
             .video-card { padding: 16px 10px; border-width: 2px; }
             .main-title { margin-bottom: 5px; }
+            /* 手机上让下载按钮占满一行，更方便点击 */
+            .link-btn { flex: 1 1 auto; justify-content: center; }
         }
     </style>
 </head>
@@ -188,8 +202,17 @@
         </div>
 
         <nav class="links">
-            <a class="link-btn" href="https://x.com/paper_trad1ng" target="_blank">Twitter / X</a>
-            <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank">GitHub</a>
+            <a class="link-btn" href="https://x.com/paper_trad1ng" target="_blank">
+                Twitter / X
+            </a>
+            
+            <a class="link-btn dl" href="https://github.com/Zephyr886/paper-trading/archive/refs/tags/v1.2.zip" download>
+                📥 下载插件 v1.2
+            </a>
+
+            <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank">
+                GitHub 源码
+            </a>
         </nav>
     </main>
 
@@ -209,7 +232,6 @@
             
             audio.volume = 0.4;
 
-            // 1. 定义播放函数
             function playMusic() {
                 if (!isPlaying) {
                     audio.play().then(() => {
@@ -217,19 +239,15 @@
                         btn.classList.add('rotating');
                         btn.innerHTML = '♪';
                     }).catch(error => {
-                        console.log("播放失败（可能因为用户还没交互）");
+                        console.log("播放失败");
                     });
                 }
             }
 
-            // 2. 尝试页面一加载就播放 (部分浏览器可能允许)
             playMusic();
 
-            // 3. 关键大招：监听全屏幕的点击/触摸事件
-            // 只要用户点了屏幕任何地方（哪怕是空白处），就触发播放
             function unlockAudio() {
                 playMusic();
-                // 一旦触发成功，就移除监听，避免重复触发
                 document.removeEventListener('click', unlockAudio);
                 document.removeEventListener('touchstart', unlockAudio);
                 document.removeEventListener('keydown', unlockAudio);
@@ -239,11 +257,8 @@
             document.addEventListener('touchstart', unlockAudio);
             document.addEventListener('keydown', unlockAudio);
 
-            // 4. 按钮手动控制
             btn.addEventListener('click', function(e) {
-                // 阻止事件冒泡，防止触发上面的 unlockAudio
                 e.stopPropagation(); 
-
                 if (isPlaying) {
                     audio.pause();
                     btn.classList.remove('rotating');
