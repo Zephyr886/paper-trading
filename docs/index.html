@@ -11,7 +11,7 @@
             /* 提取自图片的配色 */
             --ink: #2c1e18;
             --accent: #9d462f;
-            --bg-card: rgba(253, 245, 230, 0.95); /* 米白色背景 */
+            --bg-card: rgba(253, 245, 230, 0.95);
         }
 
         * { box-sizing: border-box; }
@@ -76,7 +76,7 @@
             width: 100%;
             max-width: 800px;
             background: var(--bg-card);
-            padding: 24px 20px; /* 增加顶部内边距给标题留空间 */
+            padding: 24px 20px;
             border-radius: 8px;
             border: 2px solid #5b3c1d;
             box-shadow: 
@@ -88,14 +88,12 @@
             gap: 16px;
         }
 
-        /* 新增：中间的大标题样式 */
         .main-title {
-            margin: 0;
-            padding: 0;
-            font-size: clamp(20px, 4.5vw, 32px); /* 字体大小随屏幕缩放 */
+            margin: 0; padding: 0;
+            font-size: clamp(20px, 4.5vw, 32px);
             font-weight: 900;
             text-align: center;
-            color: #9d462f; /* 使用印章红，显眼 */
+            color: #9d462f;
             text-shadow: 0 1px 0 rgba(255,255,255,0.8);
             letter-spacing: 1px;
             line-height: 1.3;
@@ -138,11 +136,47 @@
         }
 
         .link-btn.gh { background: #4a5d7e; }
+
+        /* --- 音乐控制按钮样式 --- */
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(253, 245, 230, 0.9);
+            border: 2px solid #9d462f;
+            color: #9d462f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, background 0.3s;
+            font-size: 24px;
+        }
+        
+        .music-control:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        /* 旋转动画，当音乐播放时应用 */
+        .rotating {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         
         @media (max-width: 600px) {
             .site-header .brand { display: none; }
             .video-card { padding: 16px 10px; border-width: 2px; }
-            .main-title { margin-bottom: 5px; } /* 手机上稍微紧凑点 */
+            .main-title { margin-bottom: 5px; }
         }
     </style>
 </head>
@@ -154,7 +188,7 @@
 
     <main class="page">
         <div class="video-card">
-            <h1 class="main-title">构建新人友好的meme交易论坛</h1>
+            <h1 class="main-title">构建新人友好的meme交易社区</h1>
             
             <section class="video-wrap">
                 <iframe 
@@ -173,5 +207,56 @@
             <a class="link-btn gh" href="https://github.com/Zephyr886/paper-trading" target="_blank">GitHub</a>
         </nav>
     </main>
+
+    <audio id="bgm" loop>
+        <source src="bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <button class="music-control" id="musicBtn" title="播放/暂停音乐">
+        ♪
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var audio = document.getElementById('bgm');
+            var btn = document.getElementById('musicBtn');
+            var isPlaying = false;
+
+            // 设置音量，避免太吵
+            audio.volume = 0.4;
+
+            // 尝试自动播放
+            var playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(function() {
+                    // 自动播放成功
+                    isPlaying = true;
+                    btn.classList.add('rotating'); // 让按钮开始旋转
+                }).catch(function(error) {
+                    // 自动播放被阻止 (正常现象)
+                    console.log("自动播放被阻止，等待用户交互");
+                    isPlaying = false;
+                    btn.classList.remove('rotating');
+                });
+            }
+
+            // 点击按钮切换播放/暂停
+            btn.addEventListener('click', function() {
+                if (isPlaying) {
+                    audio.pause();
+                    btn.classList.remove('rotating');
+                    btn.innerHTML = '✕'; // 暂停时显示叉号或静音图标
+                    // 稍微延迟一下变回音符，或者直接变
+                    setTimeout(() => btn.innerHTML = '♪', 1000); 
+                } else {
+                    audio.play();
+                    btn.classList.add('rotating');
+                    btn.innerHTML = '♪';
+                }
+                isPlaying = !isPlaying;
+            });
+        });
+    </script>
 </body>
 </html>
