@@ -113,11 +113,11 @@
             backdrop-filter: blur(6px);
         }
 
-        .video-wrap video {
+        /* 确保 iframe 填满容器 */
+        .video-wrap iframe {
             width: 100%;
             height: 100%;
             display: block;
-            object-fit: contain;
         }
 
         .links {
@@ -171,10 +171,15 @@
         <h1 class="title">构建新人友好型meme教学社群</h1>
 
         <section class="video-wrap" aria-label="演示视频">
-            <!-- 将演示视频路径填入 src，或替换为 iframe 嵌入链接 -->
-            <video controls src="" preload="metadata" poster="">
-                您的浏览器不支持视频播放。
-            </video>
+            <iframe 
+                src="https://www.youtube.com/embed/jE3-Vd2v1P8?si=Qz3Qqwkkub1mHTVj" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen
+                style="width: 100%; height: 100%;">
+            </iframe>
         </section>
 
         <nav class="links" aria-label="社群链接">
